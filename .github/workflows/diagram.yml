@@ -1,0 +1,18 @@
+name: Build & Deploy Diagram
+on: workflow_dispatch:
+jobs:
+  build:
+    permissions: { contents: write }
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with: { python-version: '3.11' }
+    - run: pip install openai
+    - run: python scripts/make_diagram.py "${{ github.event.inputs.slug }}" "${{ github.event.inputs.infile }}"
+      env: { OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} }
+    - run: |
+        git switch -C gh-pages
+        git add docs/*.html
+        git commit -m "auto"
+        git push
